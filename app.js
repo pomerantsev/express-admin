@@ -7,6 +7,7 @@ var cli = require('./lib/app/cli'),
     project = require('./lib/app/project');
 
 var express = require('express'),
+    ejs = require('ejs'),
     logger = require('morgan'),
     bodyParser = require('body-parser'),
     multipart = require('connect-multiparty'),
@@ -298,10 +299,14 @@ if (require.main === module) {
     initCommandLine(args, function (err) {
         if (err) return console.log(err.message.red);
 
-        args.config = require(path.join(args.dpath, 'config.json'));
-        args.settings = require(path.join(args.dpath, 'settings.json'));
-        args.custom = require(path.join(args.dpath, 'custom.json'));
-        args.users = require(path.join(args.dpath, 'users.json'));
+        function getConfig (filename) {
+            return JSON.parse(ejs.render(fs.readFileSync(path.join(args.dpath, filename), 'utf8')));
+        }
+
+        args.config = getConfig('config.json');
+        args.settings = getConfig('settings.json');
+        args.custom = getConfig('custom.json');
+        args.users = getConfig('users.json');
 
         initDatabase(args, function (err) {
             if (err) return console.log(err.message.red);
